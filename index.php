@@ -1,23 +1,16 @@
-<?php
-$con = mysqli_connect("localhost", "root", "", "social");
-
-if(mysqli_connect_errno()) {
-    echo "Failed to connected" . mysqli_connect_errno();
-}
-
-$action =  "INSERT INTO test (name) VALUES('jane')";
-
-$query = mysqli_query($con, $action);
-
+<?php 
+include('includes/header.php');
 ?>
-
-<html>
-<head>
-    <title>Social</title>
-</head>
-
-<body>
-    <h1>Hello</h1>
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Dropdown button
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <a class="dropdown-item" href="#">Something else here</a>
+        </div>
+    </div>
 </body>
 
 </html>
