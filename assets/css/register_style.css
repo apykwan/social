@@ -83,6 +83,10 @@ input[type="submit"] {
     cursor: pointer;
 }
 
+input[type="submit"]:active {
+    padding: 3px 2px 2px 3px;
+}
+
 input[type="text"],
 input[type="email"],
 input[type="password"] {
