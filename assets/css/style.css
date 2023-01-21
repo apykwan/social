@@ -13,6 +13,11 @@ body {
    background-color: #E6EAE8;
 }
 
+a {
+    color: #20AAe5;
+    text-decoration: none;
+}
+
 .top_bar {
     width: 100%;
     min-width: 1050px;
@@ -153,4 +158,42 @@ textarea:focus {
 
 .post_profile_pic img {
     border-radius: 5px;
+}
+
+#comment_iframe {
+    max-height: 250px;
+    width: 100%;
+}
+
+.comment_section {
+    padding: 0 5px 5px 5px;
+}
+
+.comment_section img {
+    margin: 0 3px 3px 3px;
+    border-radius: 3px;
+}
+
+#comment_form textarea {
+    border-color: #D3D3D3;
+    width: 85%;
+    height: 35px;
+    border-radius: 5px;
+    color: #616060;
+    font-size: 14px;
+    margin: 3px 3px 3px 5px;
+}
+
+#comment_form input[type='submit'] {
+    border: none;
+    background-color: #20AAE5;
+    color: #156588;
+    border-radius: 5px;
+    width: 13%;
+    height: 35px;
+    margin-top: 3px;
+    position: absolute;
+    font-family: 'Bellota-BoldItalic', sans-serif;
+    color: #fff;
+    text-shadow: #73B6E2 0.5px 0.5px 0px;
 }

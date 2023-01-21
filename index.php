@@ -38,14 +38,14 @@ if(isset($_POST['post'])){
         </div>
         <script>
             $(function(){
-                const userLoggedIn = '<?php echo $userLoggedIn; ?>';
-                const inProgress = false;
+                var userLoggedIn = '<?php echo $userLoggedIn; ?>';
+                var inProgress = false;
             
                 loadPosts(); //Load first posts
             
                 $(window).scroll(function() {
-                    const bottomElement = $(".status_post").last();
-                    const noMorePosts = $('.posts_area').find('.noMorePosts').val();
+                    var bottomElement = $(".status_post").last();
+                    var noMorePosts = $('.posts_area').find('.noMorePosts').val();
             
                     // isElementInViewport uses getBoundingClientRect(), which requires the HTML DOM object, not the jQuery object. The jQuery equivalent is using [0] as shown below.
                     if (isElementInView(bottomElement[0]) && noMorePosts == 'false') {
@@ -61,7 +61,7 @@ if(isset($_POST['post'])){
                     inProgress = true;
                     $('#loading').show();
             
-                    const page = $('.posts_area').find('.nextPage').val() || 1; //If .nextPage couldn't be found, it must not be on the page yet (it must be the first time loading posts), so use the value '1'
+                    var page = $('.posts_area').find('.nextPage').val() || 1; //If .nextPage couldn't be found, it must not be on the page yet (it must be the first time loading posts), so use the value '1'
             
                     $.ajax({
                         url: "includes/handlers/ajax_load_posts.php",
@@ -84,7 +84,7 @@ if(isset($_POST['post'])){
             
                 //Check if the element is in view
                 function isElementInView (el) {
-                    const rect = el.getBoundingClientRect();
+                    var rect = el.getBoundingClientRect();
             
                     return (
                         rect.top >= 0 &&
