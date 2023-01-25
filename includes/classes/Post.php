@@ -42,7 +42,6 @@ class Post {
     }
 
     public function loadPostsFriends($data, $limit) {
-
 		$page = $data['page']; 
 		$userLoggedIn = $this->user_obj->getUsername();
 
@@ -70,7 +69,7 @@ class Post {
 					$user_to = "";
 				}
 				else {
-					$user_to_obj = new User($con, $row['user_to']);
+					$user_to_obj = new User($this->con, $row['user_to']);
 					$user_to_name = $user_to_obj->getFirstAndLastName();
 					$user_to = "to <a href='" . $row['user_to'] ."'>" . $user_to_name . "</a>";
 				}
@@ -94,6 +93,11 @@ class Post {
 						$count++;
 					}
 
+					if($userLoggedIn == $added_by) 
+						$delete_button = "<button class='delete_button btn-danger' id='post$id'>X</button>";
+					else
+						$delete_button = "";
+
 					$user_details_query = mysqli_query($this->con, "SELECT first_name, last_name, profile_pic FROM users WHERE username='$added_by'");
 					$user_row = mysqli_fetch_array($user_details_query);
 					$first_name = $user_row['first_name'];
@@ -101,18 +105,25 @@ class Post {
 					$profile_pic = $user_row['profile_pic'];
 
 					?>
+
 					<script>
 						function toggle<?php echo $id; ?>() {
-							const element = document.getElementById("toggleComment<?php echo $id; ?>");
+							const target = $(event.target);
+							if (!target.is("a")) {
+								const element = document.getElementById("toggleComment<?php echo $id; ?>");
 
-							if(element.style.display === "block") {
-								element.style.display = "none";
-							} else {
-								element.style.display = "block";
+								if(element.style.display === "block") {
+									element.style.display = "none";
+								} else {
+									element.style.display = "block";
+								}
 							}
 						}
 					</script>
+
 					<?php
+					$comments_check = mysqli_query($this->con, "SELECT * FROM comments WHERE post_id='$id'");
+					$comments_check_num = mysqli_num_rows($comments_check);
 
 					//Timeframe
 					$date_time_now = date("Y-m-d H:i:s");
@@ -185,10 +196,18 @@ class Post {
 
 								<div class='posted_by' style='color:#ACACAC;'>
 									<a href='$added_by'> $first_name $last_name </a> $user_to &nbsp;&nbsp;&nbsp;&nbsp;$time_message
+									$delete_button
 								</div>
 								<div id='post_body'>
 									$body
 									<br>
+									<br>
+									<br>
+								</div>
+
+								<div class='newsfeedPostOptions'>
+									Comments($comments_check_num)&nbsp;&nbsp;&nbsp;&nbsp;
+									<iframe src='like.php?post_id=$id' scrolling='no'></iframe>
 								</div>
 
 							</div>
@@ -197,7 +216,21 @@ class Post {
 							</div>
 							<hr>";
 				}
-
+				?>
+				<script>
+					$(document).ready(function() {
+						$('#post<?php echo $id; ?>').on('click', function() {
+							bootbox.confirm("Are you you wan to delete this post?", function(result) {
+								$.post("includes/form_handlers/delete_post.php?post_id=<?php echo $id; ?>", { result: result });
+								if(result) {
+									location.reload();
+								}
+									
+							})
+						})
+					});
+				</script>
+				<?php
 			} //End while loop
 
 			if($count > $limit) 

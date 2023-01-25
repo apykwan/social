@@ -140,7 +140,6 @@
 
 			$user_obj = new User($con, $posted_by);
 
-
 			?>
 			<div class="comment_section">
 				<a href="<?php echo $posted_by?>" target="_parent">
