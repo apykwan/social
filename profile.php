@@ -1,86 +1,155 @@
 <?php 
 include('includes/header.php');
+include('includes/classes/Message.php');
+
+$message_obj = new Message($con, $userLoggedIn);
 
 if(isset($_GET['profile_username'])) {
-  $username = $_GET['profile_username'];
-  $user_details_query = mysqli_query($con, "SELECT * FROM users WHERE username='$username'");
-  $user_array = mysqli_fetch_array($user_details_query);
+	$username = $_GET['profile_username'];
+	$user_details_query = mysqli_query($con, "SELECT * FROM users WHERE username='$username'");
 
-  // count the number of "," in an array minus the initial ","
-  $num_friends = (substr_count($user_array['friend_array'], ",")) - 1;
+  if(mysqli_num_rows($user_details_query) == 0) {
+    echo "User does not exist";
+    exit();
+  }
+
+	$user_array = mysqli_fetch_array($user_details_query);
+
+	$num_friends = (substr_count($user_array['friend_array'], ",")) - 1;
 }
 
 if(isset($_POST['remove_friend'])) {
   $user = new User($con, $userLoggedIn);
-  $user->removeFriend($username); 
+  $user->removeFriend($username);
 }
 
 if(isset($_POST['add_friend'])) {
-  $user = new User($con, $userLoggedIn);
-  $user->sendRequest($username); 
+	$user = new User($con, $userLoggedIn);
+	$user->sendRequest($username);
 }
 
 if(isset($_POST['respond_request'])) {
-  header("Location: requests.php");
+	header("Location: requests.php");
 }
 
-?>
-  <style>
-    .wrapper {
-      margin-left: 0px;
-      padding-left: 0px;
+if(isset($_POST['cancel_request'])) {
+  $user = new User($con, $userLoggedIn);
+  $user->cancelRequest($username);
+}
+
+if(isset($_POST['post_message'])) {
+  if(isset($_POST['message_body'])) {
+    $body = mysqli_real_escape_string($con, $_POST['message_body']);
+    $date = date("Y-m-d H:i:s");
+    $message_obj->sendMessage($username, $body, $date);
+  }
+
+  $link = '#profileTabs a[href="#messages_div"]';
+  echo "<script> 
+          $(function() {
+              $('" . $link ."').tab('show');
+          });
+        </script>";
+}
+
+ ?>
+
+ 	<style type="text/css">
+	 	.wrapper {
+	 		margin-left: 0px;
+			padding-left: 0px;
+	 	}
+ 	</style>
+	
+ 	<div class="profile_left">
+ 		<img src="<?php echo $user_array['profile_pic']; ?>">
+
+ 		<div class="profile_info">
+ 			<p><?php echo "Posts: " . $user_array['num_posts']; ?></p>
+ 			<p><?php echo "Likes: " . $user_array['num_likes']; ?></p>
+ 			<p><?php echo "Friends: " . $num_friends ?></p>
+      <p><a href="friends.php">View friends</a></p>
+ 		</div>
+
+ 		<form action="<?php echo $username; ?>" method="POST">
+ 			<?php 
+ 			$profile_user_obj = new User($con, $username); 
+ 			if($profile_user_obj->isClosed()) {
+ 				header("Location: user_closed.php");
+ 			}
+
+ 			$logged_in_user_obj = new User($con, $userLoggedIn); 
+
+ 			if($userLoggedIn != $username) {
+
+ 				if($logged_in_user_obj->isFriend($username)) {
+ 					echo '<input type="submit" name="remove_friend" class="danger" value="Remove Friend"><br>';
+ 				}
+ 				else if ($logged_in_user_obj->didReceiveRequest($username)) {
+ 					echo '<input type="submit" name="respond_request" class="warning" value="Respond to Request"><br>';
+ 				}
+ 				else if ($logged_in_user_obj->didSendRequest($username)) {
+ 					echo '<input type="submit" name="cancel_request" class="default" value="Request Sent"><br>';
+ 				}
+ 				else 
+ 					echo '<input type="submit" name="add_friend" class="success" value="Add Friend"><br>';
+ 			}
+
+ 			?>
+ 		</form>
+ 		<input type="submit" class="deep_blue" data-toggle="modal" data-target="#post_form" value="Post Something">
+
+    <?php  
+    if($userLoggedIn != $username) {
+      echo '<div class="profile_info_bottom">';
+        echo $logged_in_user_obj->getMutualFriends($username) . " Mutual friends";
+      echo '</div>';
     }
-  </style>
 
-        <div class="profile_left">
-          <img src="<?php echo $user_array['profile_pic']; ?>">
-          <div class="profile_info">
-            <p><?php echo "Posts: " . $user_array['num_posts']; ?></p>
-            <p><?php echo "Likes: " . $user_array['num_likes']; ?></p>
-            <p><?php echo "Friends: " . $num_friends; ?></p>
-          </div>
-          <form action="<?php echo $username; ?>" method="POST">
-            <?php 
-            $profile_user_obj = new User($con, $username); 
-            if($profile_user_obj->isClosed()) {
-              header("Location: user_closed_php");
-            }
+    ?>
+ 	</div>
 
-            $logged_in_user_obj = new User($con, $userLoggedIn);
+	<div class="profile_main_column column">
+    <ul class="nav nav-tabs" role="tablist" id="profileTabs">
+      <li role="presentation" class="nav-item">
+        <a class="nav-link active" href="#newsfeed_div" aria-controls="newsfeed_div" role="tab" data-toggle="tab">Newsfeed</a>
+      </li>
+      <li role="presentation" class="nav-item">
+        <a class="nav-link" href="#messages_div" aria-controls="messages_div" role="tab" data-toggle="tab">Messages</a>
+      </li>
+    </ul>
 
-            // check if the user is already a friend or not
-            if($userLoggedIn != $username) {
-              if($logged_in_user_obj->isFriend($username)) {
-                echo '<input type="submit" name="remove_friend" class="danger" value="Remove Friend"><br>';
-              }
-              else if ($logged_in_user_obj->didReceiveRequest($username)) {
-                echo '<input type="submit" name="respond_request" class="warning" value="Respond to Request"><br>';
-              }
-              else if ($logged_in_user_obj->didSendRequest($username)) {
-                echo '<input type="submit" name="" class="default" value="Request Sent"><br>';
-              }
-              else 
-                echo '<input type="submit" name="add_friend" class="success" value="Add Friend"><br>';
-            }
-            ?>
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="newsfeed_div">
+        <div class="posts_area"></div>
+        <img id="loading" src="assets/images/icons/loading.gif">
+      </div>
+
+      <div role="tabpanel" class="tab-pane" id="messages_div">
+        <?php  
+          echo "<h4>You and <a href='" . $username ."'>" . $profile_user_obj->getFirstAndLastName() . "</a></h4><hr><br>";
+
+          echo "<div class='loaded_messages' id='scroll_messages'>";
+            echo $message_obj->getMessages($username);
+          echo "</div>";
+        ?>
+
+        <div class="message_post">
+          <form action="" method="POST">
+              <textarea name='message_body' id='message_textarea' placeholder='Write your message ...'></textarea>
+              <input type='submit' name='post_message' class='info' id='message_submit' value='Send'>
           </form>
-          <input type="submit" class="deep_blue" data-toggle="modal" data-target="#post_form" value="Post Something">
-
-          <?php
-          if($userLoggedIn != $username) {
-            echo '<div class="profile_info_bottom">';
-              echo $logged_in_user_obj->getMutualFriends($username) . "Mutual friends";
-            echo '</div>';
-          }
-          ?>
         </div>
 
-        <div class="profile_main_column column">
-          <div class="posts_area"></div>
-          <img id="loading" src="assets/images/icons/loading.gif">
-
-        </div>
-
+        <script>
+          $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+              var div = document.getElementById("scroll_messages");
+              div.scrollTop = div.scrollHeight;
+          });
+        </script>
+      </div>
+    </div>
+	</div>
         <!-- Modal -->
         <div class="modal fade" id="post_form" tabindex="-1" role="dialog" aria-labelledby="postModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -95,7 +164,7 @@ if(isset($_POST['respond_request'])) {
                 <p>This will appear on user's profile page and also their newsfeed for your friends to see!</p>
                 <form class="profile_post" action="profile.php">
                   <div class="form-group">
-                    <textarea name="post_body" class="form-control" style="resize: none;"></textarea>
+                    <textarea name="post_body" class="form-control"></textarea>
                     <input type="hidden" name="user_from" value="<?php echo $userLoggedIn; ?>">
                     <input type="hidden" name="user_to" value="<?php echo $username; ?>">
                   </div>

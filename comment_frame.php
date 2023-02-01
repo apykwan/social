@@ -57,7 +57,7 @@
     }
     ?>
     <form action="comment_frame.php?post_id=<?php echo $post_id; ?>" id="comment_form" name="postComment<?php echo $post_id; ?>" method="POST">
-		<textarea name="post_body" style="resize: none;"></textarea>
+		<textarea name="post_body"></textarea>
 		<input type="submit" name="postComment<?php echo $post_id; ?>" value="Post">
 	</form>
     <!-- Load comments -->
@@ -95,7 +95,6 @@
 				else {
 					$days = $interval->d . " days ago";
 				}
-
 
 				if($interval->m == 1) {
 					$time_message = $interval->m . " month". $days;
