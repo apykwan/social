@@ -45,7 +45,9 @@ if(isset($_POST['post_message'])) {
   }
 
   $link = '#profileTabs a[href="#messages_div"]';
-  echo "<script> 
+  echo "
+        <script> 
+
           $(function() {
               $('" . $link ."').tab('show');
           });
