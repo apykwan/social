@@ -40,11 +40,30 @@ else {
             <a href="index.php">Socialfeed</a>
         </div>
 
+        <div class="search">
+            <form action="search.php" method="GET" name="search_form">
+                <input type="text" onkeyup="getLiveSearchUsers(this.value, '<?php echo $userLoggedIn ?>')" name="q" placeholder="Search..." autocomplete="off" id="search_text_input">
+                <div class="button_holder">
+                    <img src="assets/images/icons/magnifying_glass.png" alt="">
+                </div>
+            </form>
+            <div class="search_results"></div>
+            <div class="search_results_footer_empty"></div>
+        </div>
+
         <nav>
             <?php
-                //Unread messages
-                $messages = new Message($con, $userLoggedIn);
-                $num_messages = $messages->getUnreadNumber();
+                //Unread messages 
+				$messages = new Message($con, $userLoggedIn);
+				$num_messages = $messages->getUnreadNumber();
+
+				//Unread notifications 
+				$notifications = new Notification($con, $userLoggedIn);
+				$num_notifications = $notifications->getUnreadNumber();
+
+                //Unread notifications 
+				$user_obj = new User($con, $userLoggedIn);
+				$num_requests = $user_obj->getNumberOfFriendRequests();
             ?>
             <a href="">
                 <?php 
@@ -55,17 +74,25 @@ else {
                 <i class="fa fa-home fa-lg"></i>
             </a>
             <a href="javascript:void(0);" onclick="getDropdownData('<?php echo $userLoggedIn; ?>', 'message')">
-                <i class="fa fa-envelope fa-lg"></i>
-                <?php
-                if($num_messages > 0)
-                    echo '<span class="notification_badge" id="unread_message">'. $num_messages . '</span>' ;
-                ?>
-            </a>
-            <a href="#">
-                <i class="fa fa-bell fa-lg"></i>
-            </a>
+				<i class="fa fa-envelope fa-lg"></i>
+				<?php
+				if($num_messages > 0)
+				 echo '<span class="notification_badge" id="unread_message">' . $num_messages . '</span>';
+				?>
+			</a>
+            <a href="javascript:void(0);" onclick="getDropdownData('<?php echo $userLoggedIn; ?>', 'notification')">
+				<i class="fa fa-bell fa-lg"></i>
+				<?php
+				if($num_notifications > 0)
+				 echo '<span class="notification_badge" id="unread_notification">' . $num_notifications . '</span>';
+				?>
+			</a>
             <a href="requests.php">
                 <i class="fa fa-users fa-lg"></i>
+                <?php
+				if($num_requests > 0)
+				 echo '<span class="notification_badge" id="unread_requests">' . $num_requests . '</span>';
+				?>
             </a>
             <a href="#">
                 <i class="fa fa-cog fa-lg"></i>
