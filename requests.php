@@ -43,8 +43,6 @@ include("includes/header.php"); //Header
 			</form>
 			<?php
 		}
-
 	}
-
 	?>
 </div>

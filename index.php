@@ -25,6 +25,7 @@ if(isset($_POST['post'])){
                 ?>
             </div>
         </div>
+
         <div class="main_column column">
             <form class="post_form" action="index.php" method="POST">
                 <textarea name="post_text" id="post_text" placeholder="Got something to say?"></textarea>
@@ -34,6 +35,28 @@ if(isset($_POST['post'])){
             <div class="posts_area"></div>
             <img id="loading" src="assets/images/icons/loading.gif">
         </div>
+
+        <div class="user_details column">
+            <h4>Popular</h4>
+            <div class="trends">
+                <?php
+                $query = mysqli_query($con, "SELECT * FROM trends ORDER BY hits DESC LIMIT 9");
+
+                foreach($query as $row) {
+                    $word = $row['title'];
+                    $word_dot = strlen($word) >= 14 ? "..." : "";
+
+                    $trimmed_word = str_split($word, 14);
+                    $trimmed_word = $trimmed_word[0];
+
+                    echo "<div style='padding: 1px;'>";
+                    echo $trimmed_word . $word_dot;
+                    echo "<br></div>";
+                }
+                ?>
+            </div>
+        </div>
+
         <script>
             $(function(){
                 var userLoggedIn = '<?php echo $userLoggedIn; ?>';

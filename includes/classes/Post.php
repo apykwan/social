@@ -1,3 +1,4 @@
+<?php include("stopWords.php"); ?>
 <?php
 class Post {
     private $user_obj;
@@ -15,9 +16,25 @@ class Post {
         $body = str_replace('\r\n', '\n', $body);
         $body = nl2br($body);
 
-        $check_empty = preg_replace('/\s+/', '', $body);    //delete all spaces
+        $check_empty = preg_replace('/\s+/', '', $body); //Deltes all spaces 
 
         if($check_empty != "") {
+			$body_array = preg_split("/\s+/", $body);
+
+			foreach($body_array as $key => $value) {
+				if(strpos($value, "www.youtube.com/watch?v=") !== false) {
+					// https://www.youtube.com/watch?v=s6TJ6wmxzPg&dsafjsadfjjowejfowef
+					// split by & => Array(https://www.youtube.com/watch?v=s6TJ6wmxzPg, dsafjsadfjjowejfowef)
+
+					$link = preg_split("!&!", $value);
+					$value = preg_replace("!watch\?v=!", "embed/", $link[0]);
+					$value = "<br><iframe width=\'420\' height=\'315\' src=\'" . $value ."\'></iframe><br>";
+					$body_array[$key] = $value;
+				}
+			}
+
+			$body = implode(" ", $body_array);
+
             // current date and time
             $date_added = date("Y-m-d H:i:s");
             //Get username
@@ -42,8 +59,45 @@ class Post {
             $num_posts = $this->user_obj->getNumPosts();
 			$num_posts++;
 			$update_query = mysqli_query($this->con, "UPDATE users SET num_posts='$num_posts' WHERE username='$added_by'");
+
+			
+			//Convert stop words into array - split at white space
+			$stopWords = preg_split("/[\s,]+/", $stopWords);
+
+			//Remove all punctionation
+			$no_punctuation = preg_replace("/[^a-zA-Z 0-9]+/", "", $body);
+
+			//Predict whether user is posting a url. If so, do not check for trending words
+			if(strpos($no_punctuation, "height") === false && strpos($no_punctuation, "width") === false
+				&& strpos($no_punctuation, "http") === false && strpos($no_punctuation, "youtube") === false) {
+				//Convert users post (with punctuation removed) into array - split at white space
+				$keywords = preg_split("/[\s,]+/", $no_punctuation);
+
+				foreach($stopWords as $value) {
+					foreach($keywords as $key => $value2){
+						if(strtolower($value) == strtolower($value2))
+							$keywords[$key] = "";
+					}
+				}
+
+				foreach ($keywords as $value) {
+				    $this->calculateTrend(ucfirst($value));
+				}
+             }
         }
     }
+
+	public function calculateTrend($term) {
+		if($term != '') {
+			$query = mysqli_query($this->con, "SELECT * FROM trends WHERE title='$term'");
+
+			if(mysqli_num_rows($query) == 0)
+				$insert_query = mysqli_query($this->con, "INSERT INTO trends(title,hits) VALUES('$term','1')");
+			else 
+				$insert_query = mysqli_query($this->con, "UPDATE trends SET hits=hits+1 WHERE title='$term'");
+		}
+
+	}
 
     public function loadPostsFriends($data, $limit) {
 		$page = $data['page']; 
